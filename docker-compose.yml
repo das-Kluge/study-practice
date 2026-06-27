@@ -18,7 +18,7 @@ services:
       - "6379:6379"
 
   backend:
-    build: .
+    build: ./backend                    # теперь указываем папку backend
     environment:
       - ELASTICSEARCH_HOST=elasticsearch
       - REDIS_HOST=redis
@@ -29,7 +29,7 @@ services:
       - elasticsearch
       - redis
     volumes:
-      - ./app:/app/app
+      - ./backend/app:/app/app           # монтируем код из backend/app
 
 volumes:
   es_data:
