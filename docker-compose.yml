@@ -3,6 +3,7 @@ version: '3.8'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
+    container_name: studypractice-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -11,25 +12,127 @@ services:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    networks:
+      - studypractice-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
+    container_name: studypractice-redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - studypractice-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   backend:
     build: ./backend                    # теперь указываем папку backend
+    container_name: studypractice-backend
     environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
       - ELASTICSEARCH_HOST=elasticsearch
       - REDIS_HOST=redis
       - ALLOWED_ORIGINS=["http://localhost:3000"]
     ports:
       - "8000:8000"
     depends_on:
-      - elasticsearch
-      - redis
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./backend/app:/app/app           # монтируем код из backend/app
+    networks:
+      - studypractice-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: studypractice-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - studypractice-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: studypractice-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - studypractice-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: studypractice-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - studypractice-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: studypractice-postgres
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - REDIS_HOST=redis
+      - ALLOWED_ORIGINS=["http://localhost:3000"]
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=postgres
+        - POSTGRES_PORT=5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - studypractice-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   es_data:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  studypractice-network:
+    driver: bridge

@@ -1,0 +1,160 @@
+/* Основной контейнер карточки */
+.search-card {
+    background: #ffffff;
+    border-radius: 32px;
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+    padding: 48px 40px;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+    /* Заголовок */
+    .search-card h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 12px;
+        letter-spacing: -0.5px;
+    }
+
+    /* Описание */
+    .search-card .subtitle {
+        font-size: 1.1rem;
+        color: #4a4a6a;
+        margin-bottom: 32px;
+        line-height: 1.5;
+    }
+
+/* Область загрузки (drag-and-drop + кнопка) */
+.drop-zone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 24px;
+    padding: 48px 20px;
+    text-align: center;
+    background: #fafbfc;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+    position: relative;
+}
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+        border-color: #4f7df3;
+        background: #f0f4ff;
+    }
+
+    /* Скрытый input для выбора файлов */
+    .drop-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* Текст внутри зоны */
+    .drop-zone p {
+        font-size: 1rem;
+        color: #5a5a7a;
+        pointer-events: none;
+    }
+
+    .drop-zone .or-text {
+        margin: 12px 0;
+        color: #8a8aaa;
+        font-size: 0.9rem;
+    }
+
+    .drop-zone .browse-btn {
+        display: inline-block;
+        background: #4f7df3;
+        color: #fff;
+        font-weight: 600;
+        padding: 12px 32px;
+        border-radius: 40px;
+        font-size: 1rem;
+        pointer-events: none; /* клик обрабатывается через input */
+        transition: background 0.2s;
+    }
+
+    .drop-zone:hover .browse-btn {
+        background: #3a62d1;
+    }
+
+/* Список выбранных файлов */
+.file-list {
+    margin-top: 24px;
+    text-align: left;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f1f4fa;
+    padding: 12px 18px;
+    border-radius: 16px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+    .file-item .file-name {
+        font-weight: 500;
+        color: #1a1a2e;
+    }
+
+    .file-item .file-size {
+        color: #6a6a8a;
+        font-size: 0.85rem;
+    }
+
+/* Кнопка поиска (появляется, если есть файлы) */
+.search-btn {
+    margin-top: 24px;
+    width: 100%;
+    padding: 16px;
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+    .search-btn:hover {
+        background: #2d2d4a;
+    }
+
+    .search-btn:active {
+        transform: scale(0.97);
+    }
+
+/* Адаптивность для планшетов и телефонов */
+@media (max-width: 640px) {
+    .search-card {
+        padding: 32px 20px;
+    }
+
+        .search-card h1 {
+            font-size: 1.6rem;
+        }
+
+        .search-card .subtitle {
+            font-size: 1rem;
+        }
+
+    .drop-zone {
+        padding: 32px 16px;
+    }
+
+        .drop-zone .browse-btn {
+            padding: 10px 24px;
+            font-size: 0.9rem;
+        }
+
+    .file-item {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+}
